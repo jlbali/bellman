@@ -39,6 +39,20 @@ class InequalityConstraintSet:
         return barrier
 
 
+def brute_force_minimizer(f, search_grid):
+    values = np.zeros(len(search_grid))
+    for i in range(len(search_grid)):
+        value = f([search_grid[i]])
+        if np.isnan(value):
+            value = np.inf
+        values[i] = value
+    index = np.argmin(values)
+    #print("bfm values ", values)
+    #print("index min: ", index)
+    #print("grid min: ", search_grid[index])
+    #print("value min: ", f([search_grid[index]]))
+    return search_grid[index]
+
 
 class DeterministicBellman1D:
     """
@@ -50,7 +64,8 @@ class DeterministicBellman1D:
         self.U = U
         self.G = G
         self.beta = beta
-    
+
+
     """
     Simple Value Function Iteration.
     Considers a regular grid where the evaluation is made.
@@ -59,6 +74,69 @@ class DeterministicBellman1D:
         - start, stop and num_points are used to construct the grid.
     """
     def VFI_simple_solver(self, eps, initial_mu, grid, search_grid):
+        V_old = np.zeros(len(grid)) 
+        g_values = np.zeros(len(grid)) # policy values.
+        mu = initial_mu
+        it = 1
+        anomaly = False
+        while not anomaly:
+            print("Iteration ", it)
+            def V(y):
+                return interp(y, grid, V_old)
+            V_new = np.zeros(len(grid)) # Could be before...
+            for i in range(len(grid)):
+                #print("grid point ",i)
+                x = grid[i]
+                barrier = self.G(x).get_log_barrier()
+                # Define the objective function, with the barrier.
+                def opt_fun(y_arr):
+                    y = y_arr[0]
+                    #print ("y inside: ", y)
+                    #print("U inside: ", self.U(x,y))
+                    #print("barrier inside: ", barrier(y))
+                    #print("V inside: ", V(y))
+                    #print("x inside ", x)
+                    return -(self.U(x,y) + mu*barrier(y) + self.beta*V(y))
+                # Minimize the objective function.
+                #print("Start point: ",start_point)
+                display = True
+                y_opt = brute_force_minimizer(opt_fun ,search_grid)
+                g_values[i] = y_opt
+                #print("Y_opt: ",y_opt)
+                V_new[i] = self.U(x,y_opt) + self.beta*V(y_opt) # Devuelve nan en el y_opt...
+                #print("x: ", x)
+                #print("Y_opt: ", y_opt)
+                #print("U: ", self.U(x,y_opt)) 
+                #print("V: ", V(y_opt))# V es nan...
+                if np.isnan(V(y_opt)) or np.isnan(self.U(x,y_opt)):
+                    print("NAN detected!")
+                    sys.exit()
+            print("g", g_values)
+            #print("V_old" , V_old)
+            #print("V_new", V_new)
+            difference = np.max(np.abs(V_old - V_new))
+            print("Difference: ", difference)
+            if difference < eps:
+                print("Process converged!")
+                break
+            it += 1
+            mu = initial_mu/it
+            V_old = np.copy(V_new)
+        self.V = V_new
+        self.g = g_values
+        print("Values obtained: ", self.V)
+        print("Policies obtained: ", self.g)
+        return self.V, self.g
+
+
+    """
+    Simple Value Function Iteration.
+    Considers a regular grid where the evaluation is made.
+    Input:
+        - eps determines the convergence criteria.
+        - start, stop and num_points are used to construct the grid.
+    """
+    def VFI_search_solver(self, eps, initial_mu, grid, search_grid):
         V_old = np.zeros(len(grid)) 
         g_values = np.zeros(len(grid)) # policy values.
         mu = initial_mu
@@ -100,6 +178,7 @@ class DeterministicBellman1D:
                 display = True
                 res = minimize(opt_fun, [start_point], bounds=[(search_grid[0], search_grid[-1])], options = {"disp": display})
                 y_opt = res.x[0]
+                #y_opt = brute_force_minimizer(opt_fun ,search_grid)
                 g_values[i] = y_opt
                 #print("Y_opt: ",y_opt)
                 V_new[i] = self.U(x,y_opt) + self.beta*V(y_opt) # Devuelve nan en el y_opt...
@@ -110,9 +189,9 @@ class DeterministicBellman1D:
                 if np.isnan(V(y_opt)) or np.isnan(self.U(x,y_opt)):
                     print("NAN detected!")
                     sys.exit()
-            print(g_values)
-            print(V_old)
-            print(V_new)
+            print("g", g_values)
+            print("V_old" , V_old)
+            print("V_new", V_new)
             difference = np.max(np.abs(V_old - V_new))
             print("Difference: ", difference)
             if difference < eps:
@@ -124,4 +203,3 @@ class DeterministicBellman1D:
         self.V = V_new
         self.g = g_values
         return self.V, self.g
-

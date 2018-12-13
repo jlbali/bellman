@@ -18,6 +18,7 @@ def test1():
     gamma = 0
     beta = 0.9
     delta = 1
+    #delta = 0
     U = build_utility(gamma)
     F = build_prod_function(alfa)
     optim_growth = OptimalGrowth(U,F, delta, beta)
@@ -29,6 +30,10 @@ def test1():
     plt.show()
     plt.plot(grid,g)
     plt.show()
+    investments = optim_growth.get_investment_plan(0.5) # Plan de inversiones con capital inicial 0.5
+    plt.plot(range(len(investments)), investments)
+    plt.show()
+    
     
 
 test1()
@@ -44,3 +49,4 @@ test1()
 # Se optiene siempre el mismo y_opt, que es el primero no cero... Raro.
 # Seguir analizando...
 
+# Raro, salen policies con cero... sin importar el delta de depreciacion.

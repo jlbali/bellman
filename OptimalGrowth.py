@@ -8,6 +8,7 @@ Created on Wed Dec 12 20:54:04 2018
 
 import numpy as np
 from DeterministicBellman import *
+from scipy import interp
 
 """
 Based on Stokey and Lucas (1989)
@@ -46,7 +47,7 @@ def build_prod_function(alpha):
     return F
 
 
-########### BELLMAN PROBLEMS ################################
+########### DETERMINISTIC OPTIMAL GROWTH PROBLEM ################################
 
 class OptimalGrowth:
     
@@ -55,11 +56,9 @@ class OptimalGrowth:
         assert delta >= 0 and delta <= 1
         assert beta < 1
         self.U = U
-        self.F = F
-        self.delta = delta
         self.beta = beta
         def f(k): # Available goods at the beginning of period given capital k.
-            return self.F(k) + (1.0 - self.delta)*k
+            return F(k) + (1.0 - delta)*k
         self.f = f
     """
     Determine if a sequence k's constitutes a truncated feasible solution.
@@ -86,9 +85,9 @@ class OptimalGrowth:
         return value
     
 
-    def set_initial_capital(self, k0):
-        assert k0 > 0
-        self.k0 = k0
+#    def set_initial_capital(self, k0):
+#        assert k0 > 0
+#        self.k0 = k0
 
     """
     Value Function Iteration on a regular grid.
@@ -108,8 +107,16 @@ class OptimalGrowth:
         V,g = bellman.VFI_simple_solver(eps, 1.0, grid, search_grid)
         self.V = V
         self.g = g
+        self.grid = grid
         return V,g
 
 
-        
+    def get_investment_plan(self, initial_capital, n_periods=100):
+        investments = np.zeros(n_periods)
+        def V(k):
+            return interp(k, self.grid, self.V)
+        investments[0] = initial_capital
+        for i in range(1, len(investments)):
+            investments[i] = V(investments[i-1])
+        return investments
 
