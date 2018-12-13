@@ -21,9 +21,10 @@ def test1():
     U = build_utility(gamma)
     F = build_prod_function(alfa)
     optim_growth = OptimalGrowth(U,F, delta, beta)
-    grid = np.linspace(0.001, 0.999, 50)
-    optim_growth.set_initial_capital(1.0)
-    V,g = optim_growth.VFI(grid, 0.001)
+    #grid = np.linspace(0.0, 1.0, 50) # No puede empezar en capital 0, indefiniciones por el log...
+    grid = np.linspace(0.0001, 1.0, 50) # No puede empezar en capital 0, indefiniciones por el log...
+    search_grid = np.linspace(0.0, 1.0, 500) # No puede empezar en capital 0, indefiniciones por el log...
+    V,g = optim_growth.VFI(grid, search_grid, 0.001)
     plt.plot(grid, V)
     plt.show()
     plt.plot(grid,g)
@@ -35,4 +36,11 @@ test1()
 # Ver bienm gat varias indefiniciones por llamados a logaritmos...
 
 # Considerar el uso de barreras de maximo en cero quizas...
+
+
+
+# Se esta evaluando en punto que no son feasibles.
+
+# Se optiene siempre el mismo y_opt, que es el primero no cero... Raro.
+# Seguir analizando...
 

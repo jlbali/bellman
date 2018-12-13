@@ -94,9 +94,9 @@ class OptimalGrowth:
     Value Function Iteration on a regular grid.
     """
     # CHECK! NO RESTRICTION YET AND f is not taken care of.
-    def VFI(self, grid, eps):
+    def VFI(self, grid, search_grid, eps):
         def U(x,y):
-            self.U(self.f(x) - y)
+            return self.U(self.f(x) - y)
         def G(x):
             def c0(y): # constraint y >= 0
                 return y
@@ -105,7 +105,7 @@ class OptimalGrowth:
             return InequalityConstraintSet([c0,c1])
         
         bellman = DeterministicBellman1D(U, G, self.beta)
-        V,g = bellman.VFI_simple_solver(eps, 1.0, grid)
+        V,g = bellman.VFI_simple_solver(eps, 1.0, grid, search_grid)
         self.V = V
         self.g = g
         return V,g

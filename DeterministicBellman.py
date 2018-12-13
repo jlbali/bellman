@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+import sys
 from scipy import interp
 from scipy.optimize import minimize
 
@@ -34,6 +35,7 @@ class InequalityConstraintSet:
             accum = 0.0
             for i in range(len(self.cs)):
                 accum += np.log(self.cs[i](x))
+            return accum
         return barrier
 
 
@@ -56,34 +58,70 @@ class DeterministicBellman1D:
         - eps determines the convergence criteria.
         - start, stop and num_points are used to construct the grid.
     """
-    def VFI_simple_solver(self, eps, initial_mu, grid):
-        V_values = np.zeros(len(grid)) 
+    def VFI_simple_solver(self, eps, initial_mu, grid, search_grid):
+        V_old = np.zeros(len(grid)) 
         g_values = np.zeros(len(grid)) # policy values.
         mu = initial_mu
-        i = 1
-        while True:
+        it = 1
+        anomaly = False
+        while not anomaly:
+            print("Iteration ", it)
             def V(y):
-                return interp(y, grid, V_values)
-            new_V = np.zeros(len(grid))
+                return interp(y, grid, V_old)
+            V_new = np.zeros(len(grid)) # Could be before...
             for i in range(len(grid)):
+                #print("grid point ",i)
                 x = grid[i]
                 barrier = self.G(x).get_log_barrier()
                 # Define the objective function, with the barrier.
                 def opt_fun(y_arr):
                     y = y_arr[0]
+                    #print ("y inside: ", y)
+                    #print("U inside: ", self.U(x,y))
+                    #print("barrier inside: ", barrier(y))
+                    #print("V inside: ", V(y))
+                    #print("x inside ", x)
                     return -(self.U(x,y) + mu*barrier(y) + self.beta*V(y))
-                # Minimize the objective function. Start in the middle of the grid.
-                #print(barrier(1.0))
-                res = minimize(opt_fun, [(grid[0]+grid[-1])/2])
+                # Minimize the objective function.
+                # We will look for an initially feasible point.
+                start_point = None
+                for j in range(len(search_grid)):
+                    valuation = opt_fun([search_grid[j]])
+                    if  valuation != None and not np.isnan(valuation) and np.isfinite(valuation):
+                        start_point = search_grid[j]
+                        #print("Start point found!: ", start_point)
+                        break
+                #print("Valuation ", valuation)
+                if start_point == None:
+                    print("Process stop! No feasible starting point found.")
+                    anomaly = True
+                    break
+                #print("Start point: ",start_point)
+                display = True
+                res = minimize(opt_fun, [start_point], bounds=[(search_grid[0], search_grid[-1])], options = {"disp": display})
                 y_opt = res.x[0]
                 g_values[i] = y_opt
-                new_V[i] = self.U(x,y_opt) + self.beta*V(y_opt)
-            if np.max(np.abs(V_values - new_V)) < eps:
+                #print("Y_opt: ",y_opt)
+                V_new[i] = self.U(x,y_opt) + self.beta*V(y_opt) # Devuelve nan en el y_opt...
+                #print("x: ", x)
+                #print("Y_opt: ", y_opt)
+                #print("U: ", self.U(x,y_opt)) 
+                #print("V: ", V(y_opt))# V es nan...
+                if np.isnan(V(y_opt)) or np.isnan(self.U(x,y_opt)):
+                    print("NAN detected!")
+                    sys.exit()
+            print(g_values)
+            print(V_old)
+            print(V_new)
+            difference = np.max(np.abs(V_old - V_new))
+            print("Difference: ", difference)
+            if difference < eps:
+                print("Process converged!")
                 break
-            i += 1
-            mu = initial_mu/i
-            V_values = new_V
-        self.V = new_V
+            it += 1
+            mu = initial_mu/it
+            V_old = np.copy(V_new)
+        self.V = V_new
         self.g = g_values
         return self.V, self.g
 
