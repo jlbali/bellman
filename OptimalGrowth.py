@@ -29,18 +29,34 @@ Input:
 Builds an utility function as the power of gamma.
 When gamma = 0, it considers the log.
 """
-def build_utility(gamma):
+def build_power_utility(gamma):
     def U(k):
         if gamma == 0:
             return np.log(k)
         else:
             return k**gamma
     return U
+
+"""
+Builds an utility function as the power of gamma.
+When sigma = 1, it considers the log.
+"""
+def build_sigma_utility(sigma):
+    def U(k):
+        if sigma == 1:
+            return np.log(k)
+        else:
+            return (k**(1-sigma)-1)/(1-sigma)
+    return U
+
+
+
+
+
 """
 Builds a "Cobb-Doublas" production function, taking as a parameter the alpha.
 (no labor is considered in this model)
 """
-
 def build_prod_function(alpha):
     def F(k):
         return k**alpha
