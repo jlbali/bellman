@@ -74,3 +74,7 @@ test2()
 # Seguir analizando...
 
 # Raro, salen policies con cero... sin importar el delta de depreciacion.
+
+
+# Por ahora, esta marcada para usar la version sin barrera.
+

@@ -120,7 +120,8 @@ class OptimalGrowth:
             return InequalityConstraintSet([c0,c1])
         
         bellman = DeterministicBellman1D(U, G, self.beta)
-        V,g = bellman.VFI_simple_solver(eps, 1.0, grid, search_grid)
+        #V,g = bellman.VFI_simple_solver(eps, 1.0, grid, search_grid)
+        V,g = bellman.VFI_simple_solver_no_barrier(eps, grid, search_grid)
         self.V = V
         self.g = g
         self.grid = grid
