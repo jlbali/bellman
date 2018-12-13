@@ -33,7 +33,7 @@ def test1():
     investments = optim_growth.get_investment_plan(0.5) # Plan de inversiones con capital inicial 0.5
     plt.plot(range(len(investments)), investments)
     plt.show()
-    
+    print("Investments: ", investments) # Se estaciona muy rapido el plan de inversion...
     
 
 test1()

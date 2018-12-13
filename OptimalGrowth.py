@@ -114,7 +114,7 @@ class OptimalGrowth:
     def get_investment_plan(self, initial_capital, n_periods=100):
         investments = np.zeros(n_periods)
         def V(k):
-            return interp(k, self.grid, self.V)
+            return interp(k, self.grid, self.g)
         investments[0] = initial_capital
         for i in range(1, len(investments)):
             investments[i] = V(investments[i-1])

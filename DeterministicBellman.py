@@ -111,7 +111,7 @@ class DeterministicBellman1D:
                 if np.isnan(V(y_opt)) or np.isnan(self.U(x,y_opt)):
                     print("NAN detected!")
                     sys.exit()
-            print("g", g_values)
+            #print("g", g_values)
             #print("V_old" , V_old)
             #print("V_new", V_new)
             difference = np.max(np.abs(V_old - V_new))
@@ -189,9 +189,9 @@ class DeterministicBellman1D:
                 if np.isnan(V(y_opt)) or np.isnan(self.U(x,y_opt)):
                     print("NAN detected!")
                     sys.exit()
-            print("g", g_values)
-            print("V_old" , V_old)
-            print("V_new", V_new)
+            #print("g", g_values)
+            #print("V_old" , V_old)
+            #print("V_new", V_new)
             difference = np.max(np.abs(V_old - V_new))
             print("Difference: ", difference)
             if difference < eps:
