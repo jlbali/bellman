@@ -9,6 +9,9 @@ Created on Wed Dec 12 20:54:04 2018
 import numpy as np
 from DeterministicBellman import *
 from scipy import interp
+from scipy.optimize import minimize
+import sys
+
 
 """
 Based on Stokey and Lucas (1989)
@@ -107,9 +110,9 @@ class OptimalGrowth:
 
     """
     Value Function Iteration on a regular grid.
+    Uses the general Bellman framework.
     """
-    # CHECK! NO RESTRICTION YET AND f is not taken care of.
-    def VFI(self, grid, search_grid, eps):
+    def VFI_Bellman(self, grid, search_grid, eps):
         def U(x,y):
             return self.U(self.f(x) - y)
         def G(x):
@@ -127,6 +130,48 @@ class OptimalGrowth:
         self.grid = grid
         return V,g
 
+
+    """
+    Value Function Iteration, directly solving it.
+    """
+    def VFI_manual(self, grid, eps):
+        def U(x,y):
+            return self.U(self.f(x) - y)
+        V_old = np.zeros(len(grid)) 
+        g_values = np.zeros(len(grid)) # policy values.
+        stop = False
+        while not stop:
+            def V(y):
+                return interp(y, grid, V_old)
+            V_new = np.zeros(len(grid)) # Could be before...
+            for i in range(len(grid)):
+                x = grid[i]
+                def opt_fun(y_arr):
+                    y = y_arr[0]
+                    return -(U(x,y) + self.beta*V(y))
+                display = True
+                res = minimize(opt_fun, [(0 + self.f(x))/2], bounds=[(0, self.f(x))], options = {"disp": display})
+                y_opt = res.x[0]
+                g_values[i] = y_opt
+                V_new[i] = U(x,y_opt) + self.beta*V(y_opt) # Devuelve nan en el y_opt...
+                if np.isnan(V(y_opt)) or np.isnan(U(x,y_opt)):
+                    print("NAN detected!")
+                    sys.exit()
+            difference = np.max(np.abs(V_old - V_new))
+            print("Difference: ", difference)
+            if difference < eps:
+                print("Process converged!")
+                break
+            V_old = np.copy(V_new)
+        self.V = V_new
+        self.g = g_values
+        self.grid = grid
+        return self.V, self.g
+# Estanca en cero las policies...
+
+
+
+            
 
     def get_investment_plan(self, initial_capital, n_periods=100):
         investments = np.zeros(n_periods)
