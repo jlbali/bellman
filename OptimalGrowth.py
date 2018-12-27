@@ -157,7 +157,7 @@ class OptimalGrowth:
                 if np.isnan(V(y_opt)) or np.isnan(U(x,y_opt)):
                     print("NAN detected!")
                     sys.exit()
-            difference = np.max(np.abs(V_old - V_new))
+            difference = np.max(np.abs(V_old - V_new)) # PASARLO A RELATIVO
             print("Difference: ", difference)
             if difference < eps:
                 print("Process converged!")

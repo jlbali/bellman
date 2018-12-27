@@ -39,6 +39,12 @@ class InequalityConstraintSet:
         return barrier
 
 
+# CAMBIARLO, que devuelva en vez de funciones sino el limite superior.
+# y que construya la barrera en base a eso.
+# PUNTO DE ARRANQUE: el valor mas chico de los topes superiores de las restricciones.
+# NO SIEMPRE SON ASI, OJO...        
+    
+
 def brute_force_minimizer(f, search_grid):
     values = np.zeros(len(search_grid))
     for i in range(len(search_grid)):
@@ -136,6 +142,7 @@ class DeterministicBellman1D:
     Input:
         - eps determines the convergence criteria.
         - start, stop and num_points are used to construct the grid.
+     NO interpolante CON barrera
     """
     def VFI_simple_solver(self, eps, initial_mu, grid, search_grid):
         V_old = np.zeros(len(grid)) 
@@ -199,6 +206,7 @@ class DeterministicBellman1D:
     Input:
         - eps determines the convergence criteria.
         - start, stop and num_points are used to construct the grid.
+    interpolante CON barrera
     """
     def VFI_search_solver(self, eps, initial_mu, grid, search_grid):
         V_old = np.zeros(len(grid)) 

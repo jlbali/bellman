@@ -129,4 +129,3 @@ test4() # Perfecta coincidencia.
 # tipo de restricción!!
 
 # Test 3 genera un warning... Igualmente, esta andando igual que el test2. Quizas es buena marca...
-
