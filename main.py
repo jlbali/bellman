@@ -104,10 +104,32 @@ def test4():
     plt.show()
     
 
+# Comparison of both schemes (manual solving and with Deterministic Bellman)...
+def test5():
+    alfa = 1/3
+    sigma = 1
+    #sigma = 0.5 # No parece tener mucho efecto en el plan de inversion.
+    beta = 0.9
+    delta = 1
+    U = build_sigma_utility(sigma)
+    F = build_prod_function(alfa)
+    optim_growth = OptimalGrowth(U,F, delta, beta)
+    grid = np.linspace(0.0001, 1.0, 50) # No puede empezar en capital 0, indefiniciones por el log...
+    V1,g1 = optim_growth.VFI_interpolate(grid, grid,  0.001)
+    V2,g2 = optim_growth.VFI_grid_search(grid,  0.001)
+    #V3,g3 = optim_growth.VFI_interpolate_log_barrier(grid, grid, 0.001, 1.0) # No anda bien...
+    plt.plot(grid, g1)
+    plt.plot(grid, g2)
+    #plt.plot(grid, g3)
+    plt.show()
+
+
 #test1()
 #test2()
 #test3()
-test4() # Perfecta coincidencia.
+#test4() # Perfecta coincidencia.
+
+test5()
 
 # Ver bienm gat varias indefiniciones por llamados a logaritmos...
 

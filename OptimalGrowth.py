@@ -74,11 +74,14 @@ class OptimalGrowth:
     def __init__(self, U, F, delta, beta):
         assert delta >= 0 and delta <= 1
         assert beta < 1
-        self.U = U
         self.beta = beta
         def f(k): # Available goods at the beginning of period given capital k.
             return F(k) + (1.0 - delta)*k
         self.f = f
+        def U2(x,y):
+            return U(self.f(x) - y)
+        self.U = U2
+
     """
     Determine if a sequence k's constitutes a truncated feasible solution.
     It must comply with 0 <= k_{t+1} <= f(k_t)
@@ -131,33 +134,29 @@ class OptimalGrowth:
         return V,g
 
 
-    """
-    Value Function Iteration, directly solving it.
-    """
-    def VFI_manual(self, grid, eps):
-        def U(x,y):
-            return self.U(self.f(x) - y)
+    def VFI_grid_search(self, grid, eps):
+        """
+        Value Function Iteration, directly solving it.
+        """
         V_old = np.zeros(len(grid)) 
         g_values = np.zeros(len(grid)) # policy values.
         stop = False
         while not stop:
-            def V(y):
-                return interp(y, grid, V_old)
             V_new = np.zeros(len(grid)) # Could be before...
             for i in range(len(grid)):
                 x = grid[i]
-                def opt_fun(y_arr):
-                    y = y_arr[0]
-                    return -(U(x,y) + self.beta*V(y))
-                display = True
-                res = minimize(opt_fun, [(0 + self.f(x))/2], bounds=[(0, self.f(x))], options = {"disp": display})
-                y_opt = res.x[0]
+                values = np.zeros(len(grid))
+                for j in range(len(grid)):
+                    y = grid[j]
+                    if 0 <= y <= self.f(x): 
+                        values[j] = self.U(x,y) + self.beta*V_old[j]
+                    else:
+                        values[j] = -np.inf
+                j_opt = np.argmax(values)
+                y_opt = grid[j_opt]
                 g_values[i] = y_opt
-                V_new[i] = U(x,y_opt) + self.beta*V(y_opt) # Devuelve nan en el y_opt...
-                if np.isnan(V(y_opt)) or np.isnan(U(x,y_opt)):
-                    print("NAN detected!")
-                    sys.exit()
-            difference = np.max(np.abs(V_old - V_new)) # PASARLO A RELATIVO
+                V_new[i] = np.max(values)
+            difference = np.max(np.abs((V_old - V_new)/V_old))
             print("Difference: ", difference)
             if difference < eps:
                 print("Process converged!")
@@ -167,7 +166,82 @@ class OptimalGrowth:
         self.g = g_values
         self.grid = grid
         return self.V, self.g
-# Estanca en cero las policies...
+
+
+    def VFI_interpolate(self, interp_nodes, grid, eps):
+        """
+        Value Function Iteration, directly solving it.
+        """
+        V_old = np.zeros(len(grid)) 
+        g_values = np.zeros(len(grid)) # policy values.
+        stop = False
+        while not stop:
+            def V(y):
+                return interp(y, interp_nodes, V_old)
+            V_new = np.zeros(len(grid)) # Could be before...
+            for i in range(len(grid)):
+                x = grid[i]
+                def opt_fun(y_arr):
+                    y = y_arr[0]
+                    return -(self.U(x,y) + self.beta*V(y))
+                display = True
+                res = minimize(opt_fun, [(0 + self.f(x))/2], bounds=[(0, self.f(x))], options = {"disp": display})
+                y_opt = res.x[0]
+                g_values[i] = y_opt
+                V_new[i] = self.U(x,y_opt) + self.beta*V(y_opt) # Devuelve nan en el y_opt...
+                if np.isnan(V(y_opt)) or np.isnan(self.U(x,y_opt)):
+                    print("NAN detected!")
+                    sys.exit()
+            difference = np.max(np.abs((V_old - V_new)/V_old)) 
+            print("Difference: ", difference)
+            if difference < eps:
+                print("Process converged!")
+                break
+            V_old = np.copy(V_new)
+        self.V = V_new
+        self.g = g_values
+        self.grid = grid
+        return self.V, self.g
+
+
+    def VFI_interpolate_log_barrier(self, interp_nodes, grid, eps, initual_mu = 1.0):
+        """
+        Value Function Iteration, directly solving it.
+        """
+        V_old = np.zeros(len(grid)) 
+        g_values = np.zeros(len(grid)) # policy values.
+        stop = False
+        i = 1
+        while not stop:
+            mu = initual_mu / i
+            def V(y):
+                return interp(y, interp_nodes, V_old)
+            V_new = np.zeros(len(grid)) # Could be before...
+            for i in range(len(grid)):
+                x = grid[i]
+                def opt_fun(y_arr):
+                    y = y_arr[0]
+                    return -(self.U(x,y) + mu*np.log(y) + mu*np.log(self.f(x) - y) + self.beta*V(y))
+                display = True
+                #res = minimize(opt_fun, [(0 + self.f(x))/2], bounds=[(0, self.f(x))], options = {"disp": display})
+                res = minimize(opt_fun, [(0 + self.f(x))/2], options = {"disp": display})
+                y_opt = res.x[0]
+                g_values[i] = y_opt
+                V_new[i] = self.U(x,y_opt) + self.beta*V(y_opt) # Devuelve nan en el y_opt...
+                if np.isnan(V(y_opt)) or np.isnan(self.U(x,y_opt)):
+                    print("NAN detected!")
+                    sys.exit()
+            difference = np.max(np.abs((V_old - V_new)/V_old)) 
+            print("Difference: ", difference)
+            if difference < eps:
+                print("Process converged!")
+                break
+            V_old = np.copy(V_new)
+            i += 1
+        self.V = V_new
+        self.g = g_values
+        self.grid = grid
+        return self.V, self.g
 
 
 
