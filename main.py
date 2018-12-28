@@ -116,7 +116,7 @@ def test5():
     U = build_sigma_utility(sigma)
     F = build_prod_function(alfa)
     optim_growth = OptimalGrowth(U,F, delta, beta)
-    grid = np.linspace(0.0001, 1.0, 500) # No puede empezar en capital 0, indefiniciones por el log...
+    grid = np.linspace(0.0001, 1.0, 50) # No puede empezar en capital 0, indefiniciones por el log...
     nodes = np.linspace(0.0001, 1.0, 10)
     V1,g1 = optim_growth.VFI_interpolate(grid,  0.001)
     V2,g2 = optim_growth.VFI_grid_search(grid,  0.001)
