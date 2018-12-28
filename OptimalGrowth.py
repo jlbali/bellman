@@ -188,7 +188,7 @@ class OptimalGrowth:
                 res = minimize(opt_fun, [(0 + self.f(x))/2], bounds=[(0, self.f(x))], options = {"disp": display})
                 y_opt = res.x[0]
                 g_values[i] = y_opt
-                V_new[i] = self.U(x,y_opt) + self.beta*V(y_opt) # Devuelve nan en el y_opt...
+                V_new[i] = self.U(x,y_opt) + self.beta*V(y_opt)
                 if np.isnan(V(y_opt)) or np.isnan(self.U(x,y_opt)):
                     print("NAN detected!")
                     sys.exit()
@@ -211,9 +211,9 @@ class OptimalGrowth:
         V_old = np.zeros(len(grid)) 
         g_values = np.zeros(len(grid)) # policy values.
         stop = False
-        i = 1
+        it = 1
         while not stop:
-            mu = initual_mu / i
+            mu = initual_mu / it
             def V(y):
                 return interp(y, interp_nodes, V_old)
             V_new = np.zeros(len(grid)) # Could be before...
@@ -224,25 +224,70 @@ class OptimalGrowth:
                     return -(self.U(x,y) + mu*np.log(y) + mu*np.log(self.f(x) - y) + self.beta*V(y))
                 display = True
                 #res = minimize(opt_fun, [(0 + self.f(x))/2], bounds=[(0, self.f(x))], options = {"disp": display})
-                res = minimize(opt_fun, [(0 + self.f(x))/2], options = {"disp": display})
+                #res = minimize(opt_fun, [(0 + self.f(x))/2], options = {"disp": display})
+                res = minimize(opt_fun, [(0 + self.f(x))/2])
                 y_opt = res.x[0]
                 g_values[i] = y_opt
-                V_new[i] = self.U(x,y_opt) + self.beta*V(y_opt) # Devuelve nan en el y_opt...
+                V_new[i] = self.U(x,y_opt) + self.beta*V(y_opt)
                 if np.isnan(V(y_opt)) or np.isnan(self.U(x,y_opt)):
                     print("NAN detected!")
                     sys.exit()
+            #print("g: ", g_values)
+            #print("V: ", V_new)
             difference = np.max(np.abs((V_old - V_new)/V_old)) 
             print("Difference: ", difference)
             if difference < eps:
                 print("Process converged!")
                 break
             V_old = np.copy(V_new)
-            i += 1
+            it += 1
         self.V = V_new
         self.g = g_values
         self.grid = grid
         return self.V, self.g
 
+
+    def VFI_interpolate_log_barrier_bound(self, interp_nodes, grid, eps, initual_mu = 1.0):
+        """
+        Value Function Iteration, directly solving it.
+        """
+        V_old = np.zeros(len(grid)) 
+        g_values = np.zeros(len(grid)) # policy values.
+        stop = False
+        it = 1
+        while not stop:
+            mu = initual_mu / it
+            def V(y):
+                return interp(y, interp_nodes, V_old)
+            V_new = np.zeros(len(grid)) # Could be before...
+            for i in range(len(grid)):
+                x = grid[i]
+                def opt_fun(y_arr):
+                    y = y_arr[0]
+                    return -(self.U(x,y) + mu*np.log(y) + mu*np.log(self.f(x) - y) + self.beta*V(y))
+                display = True
+                res = minimize(opt_fun, [(0 + self.f(x))/2], bounds=[(0, self.f(x))], options = {"disp": display})
+                #res = minimize(opt_fun, [(0 + self.f(x))/2], options = {"disp": display})
+                #res = minimize(opt_fun, [(0 + self.f(x))/2])
+                y_opt = res.x[0]
+                g_values[i] = y_opt
+                V_new[i] = self.U(x,y_opt) + self.beta*V(y_opt)
+                if np.isnan(V(y_opt)) or np.isnan(self.U(x,y_opt)):
+                    print("NAN detected!")
+                    sys.exit()
+            #print("g: ", g_values)
+            #print("V: ", V_new)
+            difference = np.max(np.abs((V_old - V_new)/V_old)) 
+            print("Difference: ", difference)
+            if difference < eps:
+                print("Process converged!")
+                break
+            V_old = np.copy(V_new)
+            it += 1
+        self.V = V_new
+        self.g = g_values
+        self.grid = grid
+        return self.V, self.g
 
 
             

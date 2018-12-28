@@ -11,7 +11,7 @@ import scipy as sp
 import pandas as pd
 import matplotlib.pyplot as plt
 from OptimalGrowth import *
-
+import warnings
 
 def test1():
     alfa = 1/3
@@ -105,7 +105,9 @@ def test4():
     
 
 # Comparison of both schemes (manual solving and with Deterministic Bellman)...
+# Por ahora, los nodos de interpolacion coinciden con los de busqueda...
 def test5():
+    warnings.filterwarnings("ignore")
     alfa = 1/3
     sigma = 1
     #sigma = 0.5 # No parece tener mucho efecto en el plan de inversion.
@@ -117,11 +119,14 @@ def test5():
     grid = np.linspace(0.0001, 1.0, 50) # No puede empezar en capital 0, indefiniciones por el log...
     V1,g1 = optim_growth.VFI_interpolate(grid, grid,  0.001)
     V2,g2 = optim_growth.VFI_grid_search(grid,  0.001)
-    #V3,g3 = optim_growth.VFI_interpolate_log_barrier(grid, grid, 0.001, 1.0) # No anda bien...
+    V3,g3 = optim_growth.VFI_interpolate_log_barrier(grid, grid, 0.001, 1.0) # No anda bien...
+    V4,g4 = optim_growth.VFI_interpolate_log_barrier_bound(grid, grid, 0.001, 1.0)
     plt.plot(grid, g1)
     plt.plot(grid, g2)
-    #plt.plot(grid, g3)
+    #plt.plot(grid, g3) # <-- Anda mal, devuelve negativos...
+    plt.plot(grid, g4) # Da bastante distinto a los dos anteriores...
     plt.show()
+
 
 
 #test1()
