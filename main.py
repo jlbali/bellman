@@ -116,13 +116,13 @@ def test5():
     U = build_sigma_utility(sigma)
     F = build_prod_function(alfa)
     optim_growth = OptimalGrowth(U,F, delta, beta)
-    grid = np.linspace(0.0001, 1.0, 50) # No puede empezar en capital 0, indefiniciones por el log...
+    grid = np.linspace(0.0001, 1.0, 500) # No puede empezar en capital 0, indefiniciones por el log...
     nodes = np.linspace(0.0001, 1.0, 10)
     V1,g1 = optim_growth.VFI_interpolate(grid,  0.001)
     V2,g2 = optim_growth.VFI_grid_search(grid,  0.001)
-    V3,g3 = optim_growth.VFI_interpolate_log_barrier(grid, 0.001, 1.0)
-    V4,g4 = optim_growth.VFI_interpolate_log_barrier(grid, 0.001, 1.0e-1)
-    V5,g5 = optim_growth.VFI_interpolate_log_barrier(nodes, 0.001, 1.0e-1)
+    V3,g3 = optim_growth.VFI_interpolate_log_barrier(grid, 0.001, 1.5, 1e8, 1.0) # No hace mucha diferencia, termina devolviendo lo mismo....
+    #V4,g4 = optim_growth.VFI_interpolate_log_barrier(grid, 0.001, 1.0e-1)
+    #V5,g5 = optim_growth.VFI_interpolate_log_barrier(nodes, 0.001, 1.0e-1)
     #V4,g4 = optim_growth.VFI_interpolate_log_barrier_bound(grid, grid, 0.001, 1.0)
     plt.plot(grid, g1)
     plt.plot(grid, g2)
@@ -131,6 +131,7 @@ def test5():
     #plt.plot(nodes, g5) # <-- Da distinto a g1 y g2.
     plt.show()
 
+# Raro!! Incluso quedando la phi con cero multiplicado, devuelve la misma solucion!!!
 
 #test1()
 #test2()
