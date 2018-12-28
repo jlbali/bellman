@@ -31,7 +31,9 @@ class BarrierSolver:
                 return t*self.f(x) + self.phi(x)
             display = False
             #res = minimize(opt_fun, xk, method="BFGS", options={'gtol': 1e-05, 'norm': np.inf, 'eps': 1.4901161193847656e-20, 'maxiter': None, 'disp': display, 'return_all': False})
-            res = minimize(opt_fun, xk, method="SLSQP", options={'eps': 1.4901161193847656e-20,  'disp': display})
+            #res = minimize(opt_fun, xk, method="SLSQP", options={'eps': 1.4901161193847656e-10,  'disp': display})
+            #res = minimize(opt_fun, xk, method="BFGS", options={'gtol': 1e-20, 'norm': np.inf, 'maxiter': None, 'disp': display, 'return_all': False})
+            res = minimize(opt_fun, xk)
             xk = res.x
             t = t*self.mu
         return xk

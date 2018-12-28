@@ -227,8 +227,9 @@ class OptimalGrowth:
                     return -(np.log(y) + np.log(self.f(x) - y))
                 solver = BarrierSolver(f, phi, mu)                
                 y0 = (0 + self.f(x))/2
-                y_opt = solver.solve(stop_criteria, y0, t0)[0]
+                y_opt = solver.solve(stop_criteria, [y0], t0)[0]
                 g_values[i] = y_opt
+                #g_values[i] = y0 # Se queda con el y0!!! y_opt = y_0
                 V_new[i] = self.U(x,y_opt) + self.beta*V(y_opt)
                 if np.isnan(V(y_opt)) or np.isnan(self.U(x,y_opt)):
                     print("NAN detected!")

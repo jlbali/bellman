@@ -140,6 +140,10 @@ def test5():
 
 test5()
 
+
+# Si el epsilon para la aproximacion del jacobiano es muy chico, el y_opt se vuelve el y_0 inicial.
+# Si es "grande", el y_opt se vuelve cualquier valor, incluso negativo. Raro pues deberia ser expulsado por la barrera.
+
 # La barrera logaritmica es un problema, da distinto que el resto...
 
 # interp_nodes y grid deben ser lo mismo, por el tema del V... (por ahora)
