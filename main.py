@@ -117,16 +117,19 @@ def test5():
     F = build_prod_function(alfa)
     optim_growth = OptimalGrowth(U,F, delta, beta)
     grid = np.linspace(0.0001, 1.0, 50) # No puede empezar en capital 0, indefiniciones por el log...
-    V1,g1 = optim_growth.VFI_interpolate(grid, grid,  0.001)
+    nodes = np.linspace(0.0001, 1.0, 10)
+    V1,g1 = optim_growth.VFI_interpolate(grid,  0.001)
     V2,g2 = optim_growth.VFI_grid_search(grid,  0.001)
-    V3,g3 = optim_growth.VFI_interpolate_log_barrier(grid, grid, 0.001, 1.0) # No anda bien...
-    V4,g4 = optim_growth.VFI_interpolate_log_barrier_bound(grid, grid, 0.001, 1.0)
+    V3,g3 = optim_growth.VFI_interpolate_log_barrier(grid, 0.001, 1.0)
+    V4,g4 = optim_growth.VFI_interpolate_log_barrier(grid, 0.001, 1.0e-1)
+    V5,g5 = optim_growth.VFI_interpolate_log_barrier(nodes, 0.001, 1.0e-1)
+    #V4,g4 = optim_growth.VFI_interpolate_log_barrier_bound(grid, grid, 0.001, 1.0)
     plt.plot(grid, g1)
     plt.plot(grid, g2)
-    #plt.plot(grid, g3) # <-- Anda mal, devuelve negativos...
-    plt.plot(grid, g4) # Da bastante distinto a los dos anteriores...
+    plt.plot(grid, g3) # <-- Da distinto a g1 y g2.
+    #plt.plot(grid, g4) # <-- Da distinto a g1 y g2.
+    #plt.plot(nodes, g5) # <-- Da distinto a g1 y g2.
     plt.show()
-
 
 
 #test1()
@@ -135,6 +138,10 @@ def test5():
 #test4() # Perfecta coincidencia.
 
 test5()
+
+# La barrera logaritmica es un problema, da distinto que el resto...
+
+# interp_nodes y grid deben ser lo mismo, por el tema del V... (por ahora)
 
 # Ver bienm gat varias indefiniciones por llamados a logaritmos...
 
