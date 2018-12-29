@@ -199,6 +199,10 @@ def test7():
 test7()
 
 
+# Es lento el procedimiento al comienzo, pero despues toma velocidad y ahora si parece andar bien.
+# No se estanca en y0 igual a y_opt y tampoco parece devolver valores fuera del rango...
+
+
 # Si el epsilon para la aproximacion del jacobiano es muy chico, el y_opt se vuelve el y_0 inicial.
 # Si es "grande", el y_opt se vuelve cualquier valor, incluso negativo. Raro pues deberia ser expulsado por la barrera.
 
