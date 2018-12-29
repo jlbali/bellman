@@ -10,6 +10,11 @@ import numpy as np
 from scipy.optimize import minimize
 import sys
 
+"""
+Some ideas based on
+http://www.stat.cmu.edu/~ryantibs/convexopt-F15/lectures/15-barr-method.pdf
+
+"""
 
 class BarrierSolver:
     
