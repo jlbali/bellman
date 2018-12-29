@@ -179,11 +179,38 @@ def test7():
     #V4,g4 = optim_growth.VFI_interpolate_log_barrier_bound(grid, grid, 0.001, 1.0)
     plt.plot(nodes, g1)
     plt.plot(nodes, g2)
-    plt.plot(nodes, g3) # <-- Da distinto a g1 y g2.
+    plt.plot(nodes, g3) 
     #plt.plot(grid, g4) # <-- Da distinto a g1 y g2.
     #plt.plot(nodes, g5) # <-- Da distinto a g1 y g2.
     plt.show()
 
+
+
+# Como el de antes pero todo hecho en el grid fino...
+def test8():
+    warnings.filterwarnings("ignore")
+    alfa = 1/3
+    sigma = 1
+    #sigma = 0.5 # No parece tener mucho efecto en el plan de inversion.
+    beta = 0.9
+    delta = 1
+    U = build_sigma_utility(sigma)
+    F = build_prod_function(alfa)
+    optim_growth = OptimalGrowth(U,F, delta, beta)
+    grid = np.linspace(0.0001, 1.0, 50) # No puede empezar en capital 0, indefiniciones por el log...
+    nodes = np.linspace(0.0001, 1.0, 10)
+    V1,g1 = optim_growth.VFI_interpolate(grid,  0.001)
+    V2,g2 = optim_growth.VFI_grid_search(grid,  0.001)
+    V3,g3 = optim_growth.VFI_interpolate_log_barrier(grid, 0.001, 2.0, 1e8, 1.0) # No hace mucha diferencia, termina devolviendo lo mismo....
+    #V4,g4 = optim_growth.VFI_interpolate_log_barrier(grid, 0.001, 1.0e-1)
+    #V5,g5 = optim_growth.VFI_interpolate_log_barrier(nodes, 0.001, 1.0e-1)
+    #V4,g4 = optim_growth.VFI_interpolate_log_barrier_bound(grid, grid, 0.001, 1.0)
+    plt.plot(grid, g1)
+    plt.plot(grid, g2)
+    plt.plot(grid, g3) 
+    #plt.plot(grid, g4) # <-- Da distinto a g1 y g2.
+    #plt.plot(nodes, g5) # <-- Da distinto a g1 y g2.
+    plt.show()
 
 
 # Raro!! Incluso quedando la phi con cero multiplicado, devuelve la misma solucion!!!
@@ -196,12 +223,13 @@ def test7():
 #test5()
 #test6()
 
-test7()
+#test7()
+test8()
 
 
 # Es lento el procedimiento al comienzo, pero despues toma velocidad y ahora si parece andar bien.
 # No se estanca en y0 igual a y_opt y tampoco parece devolver valores fuera del rango...
-
+# El esquema adaptativo del gradiente, aunque a veces lento (en especial al comienzo), parece andar bien.
 
 # Si el epsilon para la aproximacion del jacobiano es muy chico, el y_opt se vuelve el y_0 inicial.
 # Si es "grande", el y_opt se vuelve cualquier valor, incluso negativo. Raro pues deberia ser expulsado por la barrera.
