@@ -131,7 +131,8 @@ def test5():
     #plt.plot(nodes, g5) # <-- Da distinto a g1 y g2.
     plt.show()
 
-
+# Para el log barrier se redujo la cantidad de nodos...
+# Es lento al principio pero despues toma velocidad...
 def test6():
     warnings.filterwarnings("ignore")
     alfa = 1/3
@@ -158,6 +159,33 @@ def test6():
     plt.show()
 
 
+def test7():
+    warnings.filterwarnings("ignore")
+    alfa = 1/3
+    sigma = 1
+    #sigma = 0.5 # No parece tener mucho efecto en el plan de inversion.
+    beta = 0.9
+    delta = 1
+    U = build_sigma_utility(sigma)
+    F = build_prod_function(alfa)
+    optim_growth = OptimalGrowth(U,F, delta, beta)
+    grid = np.linspace(0.0001, 1.0, 50) # No puede empezar en capital 0, indefiniciones por el log...
+    nodes = np.linspace(0.0001, 1.0, 10)
+    V1,g1 = optim_growth.VFI_interpolate(nodes,  0.001)
+    V2,g2 = optim_growth.VFI_grid_search(nodes,  0.001)
+    V3,g3 = optim_growth.VFI_interpolate_log_barrier(nodes, 0.001, 2.0, 1e8, 1.0) # No hace mucha diferencia, termina devolviendo lo mismo....
+    #V4,g4 = optim_growth.VFI_interpolate_log_barrier(grid, 0.001, 1.0e-1)
+    #V5,g5 = optim_growth.VFI_interpolate_log_barrier(nodes, 0.001, 1.0e-1)
+    #V4,g4 = optim_growth.VFI_interpolate_log_barrier_bound(grid, grid, 0.001, 1.0)
+    plt.plot(nodes, g1)
+    plt.plot(nodes, g2)
+    plt.plot(nodes, g3) # <-- Da distinto a g1 y g2.
+    #plt.plot(grid, g4) # <-- Da distinto a g1 y g2.
+    #plt.plot(nodes, g5) # <-- Da distinto a g1 y g2.
+    plt.show()
+
+
+
 # Raro!! Incluso quedando la phi con cero multiplicado, devuelve la misma solucion!!!
 
 #test1()
@@ -166,8 +194,9 @@ def test6():
 #test4() # Perfecta coincidencia.
 
 #test5()
-test6()
+#test6()
 
+test7()
 
 
 # Si el epsilon para la aproximacion del jacobiano es muy chico, el y_opt se vuelve el y_0 inicial.
